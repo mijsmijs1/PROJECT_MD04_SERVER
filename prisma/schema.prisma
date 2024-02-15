@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum MemberRole {
+  master
+  admin
+  member
+}
+
+model member {
+  id              Int        @id @default(autoincrement())
+  loginId         String     @unique @db.VarChar(15)
+  password        String     @db.Char(200)
+  role            MemberRole @default(member)
+  firstLoginState Boolean    @default(true)
+  createTime      String
+  updateTime      String
+  permission      String     @db.LongText
+  firstName       String?
+  lastName        String?
+  phoneNumber     String
+  phoneConfirm    Boolean    @default(false)
+  email           String     @unique
+  emailConfirm    Boolean    @default(false)
+  ipList          String     @default("[]")
+  avatar          String
+  logs            log[]
+}
+
+model log {
+  id         Int    @id @default(autoincrement())
+  memberId   Int
+  member     member @relation(fields: [memberId], references: [id])
+  note       String @db.LongText
+  createTime String
+}
+
+enum AvailableStatus {
+  active
+  inactive
+}
+
+enum ProductStatus {
+  active
+  inactive
+  done
+  delete
+}
+
+model category {
+  id       Int             @id @default(autoincrement())
+  name     String
+  codeName String
+  avatar   String          @db.LongText
+  createAt String
+  updateAt String
+  status   AvailableStatus @default(inactive)
+  branches branch[]
+}
+
+model branch {
+  id         Int             @id @default(autoincrement())
+  name       String
+  codeName   String
+  createAt   String
+  updateAt   String
+  status     AvailableStatus @default(inactive)
+  products   product[]
+  category   category        @relation(fields: [categoryId], references: [id])
+  categoryId Int
+}
+
+model product {
+  id               Int               @id @default(autoincrement())
+  name             String            @db.Char(255)
+  price            Float
+  moderationStatus AvailableStatus   @default(inactive)
+  status           ProductStatus     @default(inactive)
+  createAt         String
+  updateAt         String
+  desc             String            @db.LongText
+  detail           String            @db.LongText
+  address          String            @db.LongText
+  priorityStatus   AvailableStatus   @default(inactive)
+  avatar           String
+  imgs             img[]
+  videoUrl         String?
+  tradeHistory     tradeHistory[]
+  receipt_details  receipt_details[]
+  branch           branch            @relation(fields: [branchId], references: [id])
+  branchId         Int
+}
+
+model tradeHistory {
+  id        Int     @id @default(autoincrement())
+  content   String  @db.LongText
+  creatAt   String
+  product   product @relation(fields: [productId], references: [id])
+  productId Int
+  user      user?   @relation(fields: [userId], references: [id])
+  userId    Int?
+}
+
+model img {
+  id        Int     @id @default(autoincrement())
+  imgUrl    String
+  createAt  String
+  updateAt  String
+  product   product @relation(fields: [productId], references: [id])
+  productId Int
+}
+
+model user {
+  id             Int             @id @default(autoincrement())
+  userName       String          @unique
+  password       String
+  avatar         String          @db.LongText
+  email          String          @unique
+  emailConfirm   AvailableStatus @default(inactive)
+  phoneNumber    String?
+  phoneConfirm   AvailableStatus @default(inactive)
+  wallet         Float           @default(0) @db.Double()
+  status         Boolean         @default(true)
+  createAt       String
+  updateAt       String
+  lastLogin      String?
+  firstName      String?
+  lastName       String?
+  birthday       String?
+  ipList         String          @default("[]")
+  tradeHistories tradeHistory[]
+  ip_list        ip_list[]
+  receipt        receipt[]
+}
+
+model ip_list {
+  id         Int     @id @default(autoincrement())
+  ip         String  @db.Char(255)
+  status     Boolean @default(true)
+  userId     Int
+  createAt   String
+  deviceName String
+  users      user    @relation(fields: [userId], references: [id])
+}
+
+model receipt {
+  id         Int               @id @default(autoincrement())
+  total      Int               @default(0)
+  createAt   String
+  updateAt   String
+  paid       Boolean           @default(false)
+  paidAt     String?
+  payMethod  payMethod?        @default(zalo_pay)
+  payAmount  payAmount?
+  userId     Int
+  status     ReceiptStatus     @default(shopping)
+  pending    String?
+  acceptAt   String?
+  shippingAt String?
+  doneAt     String?
+  users      user?             @relation(fields: [userId], references: [id])
+  usersId    Int?
+  detail     receipt_details[]
+}
+
+model receipt_details {
+  id        Int     @id @default(autoincrement())
+  receiptId Int
+  productId Int
+  note      String  @default("")
+  products  product @relation(fields: [productId], references: [id])
+  receipts  receipt @relation(fields: [receiptId], references: [id])
+}
+
+enum payMethod {
+  zalo_pay
+  bank
+}
+
+enum payAmount {
+  full
+  deposit
+}
+
+enum ReceiptStatus {
+  shopping
+  pending
+  accepted
+  shipping
+  done
+  delete
+}

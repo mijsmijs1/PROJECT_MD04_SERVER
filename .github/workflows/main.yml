@@ -1,0 +1,41 @@
+name: Deploy
+on:
+  push:
+    branches: [ master ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:       
+    - name: Kết nối ssh linux -> và pull .
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        password: ${{ secrets.PASS }}
+        port: 22
+        script: |
+          cd /var/www/ern_lms_client_server/ern_lms_server
+          git pull
+          . $HOME/.nvm/nvm.sh
+          nvm use
+          pm2 stop ern_client_server
+          npm ci
+          sed -i '/"@prisma\/client"/d' package.json
+          npm i @prisma/client
+          npx prisma generate
+          cp .env.example .env
+          sed -i 's/NUMBER/4000/g' .env
+          sed -i 's/HOST_ADDRESS/https:\/\/client.miao.io.vn/g' .env
+          sed -i 's/SQL_userName/ern_admin/g' .env
+          sed -i 's/SQL_password/123456aA@/g' .env
+          sed -i 's/SQL_host/103.167.89.193/g' .env
+          sed -i 's/mail_app_email/nguyphuquy1@gmail.com/g' .env
+          sed -i 's/mail_app_pass/uxvl hyrc igab szbu/g' .env
+          npm run build
+          cp node_modules dist/ -r
+          cp .env dist/
+          echo "Reset Bộ Nhớ Swap"
+          sudo swapoff -a; sudo swapon -a
+          cd dist
+          pm2 start main.js --name ern_client_server
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: MTExODgwMTExODM1MzQzMjU4Ng.G0RWJr.pXeJe8cpSthWy1f6upD9CvxAP7-Cw88IJXWYxM" -d '{"content":"@everyone minhquan: ERN_SERVER_CLIENT vừa được cập nhật! Github: https://github.com/mijsmijs1/ern_lms_client_server.git / Link API: https://client.miao.io.vn/api/v1/ "}' "https://discord.com/api/v9/channels/1197725837735239691/messages"
