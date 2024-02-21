@@ -248,4 +248,46 @@ export class UserController {
 
     }
   }
+  @Get('/:id')
+  async getProductById(@Req() req: Request, @Res() res: Response) {
+    try {
+      let { err, data } = await this.userService.findById(Number(req.params.id))
+
+      if (err) {
+        throw "Lỗi CSDL"
+      }
+
+      res.status(200).json({
+        message: "Get user thành công!",
+        data: {
+          ...data
+        }
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err ? [err] : ["Lỗi Server!"]
+      })
+    }
+  }
+  @Get('/')
+  async findMany(@Req() req: Request, @Res() res: Response) {
+    try {
+      let { err, data } = await this.userService.findMany()
+
+      if (err) {
+        throw "Lỗi CSDL"
+      }
+
+      res.status(200).json({
+        message: "Get user thành công!",
+        data: {
+          ...data
+        }
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err ? [err] : ["Lỗi Server!"]
+      })
+    }
+  }
 }

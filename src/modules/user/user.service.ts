@@ -3,13 +3,28 @@ import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class UserService {
     constructor(private readonly prisma: PrismaService) { }
-    async findById(id:number){
+    async findById(id: number) {
         try {
             let user = await this.prisma.user.findUnique({
                 where: {
                     id: id
                 }
             })
+            if (!user) {
+                throw "Tài khoản không tồn tại"
+            }
+            return {
+                data: user
+            }
+        } catch (err) {
+            return {
+                err
+            }
+        }
+    }
+    async findMany() {
+        try {
+            let user = await this.prisma.user.findMany({})
             if (!user) {
                 throw "Tài khoản không tồn tại"
             }
@@ -62,6 +77,39 @@ export class UserService {
             return {
                 data: user
             }
+        } catch (err) {
+            return {
+                err
+            }
+        }
+    }
+    async updateWallet(userName: string, amount: number) {
+        try {
+            const user = await this.prisma.user.findUnique({
+                where: {
+                    userName: userName
+                }
+            });
+
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            const updatedWallet = user.wallet + amount;
+
+            const updatedUser = await this.prisma.user.update({
+                where: {
+                    userName: userName
+                },
+                data: {
+                    wallet: updatedWallet,
+                    updateAt: String(Date.now())
+                }
+            });
+
+            return {
+                data: updatedUser
+            };
         } catch (err) {
             return {
                 err
