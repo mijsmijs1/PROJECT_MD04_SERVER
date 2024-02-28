@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { createProductDTO } from './dto/create_product.dto';
 import { AvailableStatus, ProductStatus } from '@prisma/client';
+import unorm from 'unorm';
 @Injectable()
 export class ProductService {
     constructor(private readonly primaService: PrismaService) { }
@@ -172,30 +173,41 @@ export class ProductService {
     }
     async getByKeyWord(keyWord: string, more: boolean) {
         try {
-            let products =[]
-            if(!more){
+            let products = []
+            if (!more) {
                 products = await this.primaService.product.findMany({
-                    where:{
-                        status:ProductStatus.active,
-                        moderationStatus:AvailableStatus.active
+                    where: {
+                        status: ProductStatus.active,
+                        moderationStatus: AvailableStatus.active
                     },
                     select: {
                         id: true,
                         name: true,
                     },
                 });
-            } else{
+            } else {
                 products = await this.primaService.product.findMany({
-                    where:{
-                        status:ProductStatus.active,
-                        moderationStatus:AvailableStatus.active
+                    where: {
+                        status: ProductStatus.active,
+                        moderationStatus: AvailableStatus.active
                     }
                 });
             }
-           
-            let filteredProducts = products.filter((product) =>
-                product.name.includes(keyWord)
-            );
+            let filteredProducts: any = ""
+            let nomalString = unorm.nfd(keyWord).replace(/[\u0300-\u036f]/g, "")
+            if (nomalString == keyWord) {
+                filteredProducts = products.filter((product) =>
+
+                    unorm.nfd(product.name).replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase().includes(keyWord.toLocaleLowerCase())
+                );
+            } else {
+                filteredProducts = products.filter((product) =>
+
+                    product.name.toLocaleUpperCase().includes(keyWord.toLocaleUpperCase()) || product.name.toLocaleLowerCase().includes(keyWord.toLocaleLowerCase())
+                );
+            }
+            // product.name.includes(keyWord)
+
             return {
                 data: filteredProducts,
             };

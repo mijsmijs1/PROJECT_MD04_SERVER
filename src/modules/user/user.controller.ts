@@ -1,4 +1,4 @@
-import { Body, Controller, Ip, Post, Req, Res, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Ip, Post, Req, Res, Get, Param, ParseIntPipe, Patch, UsePipes} from '@nestjs/common';
 import { UserService } from './user.service';
 import { Request, Response } from "express"
 import { userLoginDTO } from './dto/userLogin.dto';
@@ -9,7 +9,8 @@ import { CreateUserDTO } from './dto/create-user.dto';
 import { AvailableStatus } from '@prisma/client';
 import { MailService } from '../mail/mail.service';
 import axios from 'axios';
-
+import { token } from 'src/utils/token';
+import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
 @Controller('user')
 export class UserController {
   constructor(
@@ -18,12 +19,12 @@ export class UserController {
   ) { }
 
   @Post("/register")
-  async createUser(@Ip() ip: string, @Body() body: CreateUserDTO, @Req() req: Request, @Res() res: Response) {
+  async createUser(@Ip() ip: string, @Body(new ValidationPipe()) body: CreateUserDTO, @Req() req: Request, @Res() res: Response) {
     try {
       let realIpList = (req as any).headers['x-forwarded-for'] ? (req as any).headers['x-forwarded-for'] : ip
       let { data, err } = await this.userService.create({
         ...body,
-        password: hashSync(body.password, 10),
+        password: hashSync(body.password ? body.password : "123456", 10),
         ipList: JSON.stringify([`${realIpList}`]),
         avatar: "https://cdn-icons-png.flaticon.com/512/8188/8188362.png",
         createAt: String(Date.now()),
@@ -283,6 +284,29 @@ export class UserController {
         data: {
           ...data
         }
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err ? [err] : ["Lỗi Server!"]
+      })
+    }
+  }
+  @Patch('/:userId')
+  async update(@Req() req: Request, @Body() body: any, @Res() res: Response) {
+    try {
+      let userId = req.params.userId
+      let { err, data } = await this.userService.update(Number(userId), {...body})
+
+      if (err) {
+        throw "Lỗi CSDL"
+      }
+
+      res.status(200).json({
+        message: "Update user thành công!",
+        data: {
+          ...data
+        },
+        token: token.createToken(data)
       })
     } catch (err) {
       res.status(500).json({

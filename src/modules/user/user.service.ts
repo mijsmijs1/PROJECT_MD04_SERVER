@@ -78,6 +78,8 @@ export class UserService {
                 data: user
             }
         } catch (err) {
+            console.log(err);
+            
             return {
                 err
             }

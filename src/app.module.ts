@@ -10,19 +10,20 @@ import { ChapterLessonModule } from './modules/chapter_lesson/chapter_lesson.mod
 import { WalletModule } from './modules/wallet/wallet.module';
 import { ProductModule } from './modules/product/product.module';
 import { MemberModule } from './modules/member/member.module';
-import { LoginModule } from './modules/login/login.module';
+// import { LoginModule } from './modules/login/login.module';
+import { ReceiptModule } from './modules/receipt/receipt.module';
 
 @Module({
   imports: [UserModule,
   PrismaModule,
   MailModule,
-  LoginModule,
   MemberModule,
   CourseModule,
   CategoryModule,
   ChapterLessonModule,
   WalletModule,
-  ProductModule],
+  ProductModule,
+  ReceiptModule],
   controllers: [AppController],
   providers: [AppService],
 })

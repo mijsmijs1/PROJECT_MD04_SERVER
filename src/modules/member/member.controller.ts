@@ -11,8 +11,8 @@ import { ChangePasswordDTO } from './dto/change-password.dto';
 import { CreateMemberDTO } from './dto/create-member.dto';
 import { MemberRole, member } from '@prisma/client';
 import { ChangePermissionDTO } from './dto/change-permission.dto';
-import { LoginService } from '../login/login.service';
-import { LoginGateway } from '../login/login.gateway';
+// import { LoginService } from '../login/login.service';
+// import { LoginGateway } from '../login/login.gateway';
 import { token } from 'src/utils/token';
 
 @Controller('member')
@@ -20,8 +20,8 @@ export class MemberController {
   constructor(
     private readonly memberService: MemberService,
     private readonly mailService: MailService,
-    private readonly loginService: LoginService,
-    private readonly loginGateway: LoginGateway
+    // private readonly loginService: LoginService,
+    // private readonly loginGateway: LoginGateway
   ) { }
 
   @Post("/login")
@@ -123,13 +123,13 @@ export class MemberController {
         throw err.message || "DB Connect Failed!";
       }
 
-      await this.loginService.createLog({
-        memberId: req.tokenData.id,
-        note: `Thành viên: ${(req.tokenData as member).firstName} ${(req.tokenData as member).lastName} đã thay đổi quyền của user có id: ${memberId}`,
-        createTime: String(Date.now())
-      })
+      // await this.loginService.createLog({
+      //   memberId: req.tokenData.id,
+      //   note: `Thành viên: ${(req.tokenData as member).firstName} ${(req.tokenData as member).lastName} đã thay đổi quyền của user có id: ${memberId}`,
+      //   createTime: String(Date.now())
+      // })
 
-      this.loginGateway.sendLog(this.loginGateway.memberLoginList.find(item => item.data.role == MemberRole.master).socket)
+      // this.loginGateway.sendLog(this.loginGateway.memberLoginList.find(item => item.data.role == MemberRole.master).socket)
 
       return res.status(200).json({
         message: "Cập nhật quyền thành công!",

@@ -265,7 +265,7 @@ export class ProductController {
       // Lấy size video
       const videoSize = statSync(videoPath).size;
       // CHUCK zise tức là phần dung lượng video sẽ lấy để trả về tương ứng lần call
-      const CHUNK_SIZE = 5 * 10 ** 5; // ~500 KB => 500000 Bytes
+      const CHUNK_SIZE = 10 * 10 ** 5; // ~500 KB => 500000 Bytes
       //Lấy số range gửi qua để tính (là điểm bắt đầu)
       const start = Number(range.replace(/\D/g, ""));// 'bytes=6750208-' => 6750208
       //Điểm end là start cộng với CHUNK_SIZE
